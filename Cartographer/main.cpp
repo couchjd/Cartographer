@@ -101,11 +101,15 @@ int main()
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+	std::cout << "Loading IMAGE 1..." << std::endl;
 	unsigned char *data = stbi_load("../res/textures/faerun_no_tags.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
+		std::cout << "Done loading IMAGE 1. Generating TEXTURE 1..." << std::endl;
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		std::cout << "Done generating TEXTURE 1. Generating MIPMAPS 1..." << std::endl;
 		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Done generating MIPMAPS 1." << std::endl;
 	}
 	else
 	{
@@ -123,12 +127,16 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load image, create texture and generate mipmaps
+	std::cout << "Loading IMAGE 2..." << std::endl;
 	data = stbi_load("../res/textures/faerun_tags.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
+		std::cout << "Done loading IMAGE 2. Generating TEXTURE 2..." << std::endl;
 		// note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		std::cout << "Done generating TEXTURE 2. Generating MIPMAPS 2..." << std::endl;
 		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Done generating MIPMAPS 2." << std::endl;
 	}
 	else
 	{
