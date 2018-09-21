@@ -19,11 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="shader_s.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stb_image.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\shaders\fragmentShader.glsl" />
+    <None Include="..\res\shaders\vertexShader.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -77,8 +82,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Jeff\Documents\PROGRAMMING\Cartographer\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Jeff\Documents\PROGRAMMING\Cartographer\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\couch\Documents\PROGRAMMING\GAME_DEV\Cartographer\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\couch\Documents\PROGRAMMING\GAME_DEV\Cartographer\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\couch\Documents\PROGRAMMING\GAME_DEV\Cartographer\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\couch\Documents\PROGRAMMING\GAME_DEV\Cartographer\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Users\couch\Documents\PROGRAMMING\GAME_DEV\Cartographer\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -89,7 +103,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\Jeff\Documents\PROGRAMMING\Cartographer\lib;C:\Users\Jeff\Documents\PROGRAMMING\Cartographer\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32d.lib;glfw3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32d.lib;glfw3d.lib;glm_static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
