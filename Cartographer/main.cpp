@@ -53,9 +53,9 @@ int main()
 	float vertices[] = {
 		// positions          // colors           // texture coords
 		 1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 1.0f, -3.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-3.0f, -3.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-3.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		 1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -167,7 +167,7 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		ourShader.setVec2("offset", offset);
+		//ourShader.setVec2("offset", offset);
 		
 		// bind textures on corresponding texture units
 		glActiveTexture(GL_TEXTURE0);
@@ -175,18 +175,16 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
-		glm::mat4 transform = { 1.0f, 0.0f, 0.0f, 1.0f, 
-								0.0f, 1.0f, 0.0f, 1.0f,
-								0.0f, 0.0f, 1.0f, 1.0f,
-								0.0f, 0.0f, 0.0f, 1.0f };
+		glm::mat4 transform(1);
 
+		transform = glm::translate(transform, glm::vec3(offset.x, offset.y, 0.0f));
 		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
 		ourShader.setFloat("mixValue", mixValue);
 
 		// render container
 		ourShader.use();
 		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_TRUE, glm::value_ptr(transform));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
