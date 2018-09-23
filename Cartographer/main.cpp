@@ -16,7 +16,9 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 float mixValue = 0.2f;
-float zoomValue = 1.0f;
+float zoomValue = 0.5f;
+
+glm::fvec2 offset = { 0.0f, 0.0f };
 
 int main()
 {
@@ -51,9 +53,9 @@ int main()
 	float vertices[] = {
 		// positions          // colors           // texture coords
 		 1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		 1.0f, -3.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-3.0f, -3.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		-3.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -151,6 +153,7 @@ int main()
 	// or set it via the texture class
 	ourShader.setInt("texture2", 1);
 
+
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -164,6 +167,8 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ourShader.setVec2("offset", offset);
+		
 		// bind textures on corresponding texture units
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -176,18 +181,6 @@ int main()
 								0.0f, 0.0f, 0.0f, 1.0f };
 
 		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
-
-		std::cout << transform[0][0] << " " << transform[0][1] << " " << transform[0][2] << " " << transform[0][3] << std::endl;
-		std::cout << transform[1][0] << " " << transform[1][1] << " " << transform[1][2] << " " << transform[1][3] << std::endl;
-		std::cout << transform[2][0] << " " << transform[2][1] << " " << transform[2][2] << " " << transform[2][3] << std::endl;
-		std::cout << transform[3][0] << " " << transform[3][1] << " " << transform[3][2] << " " << transform[3][3] << std::endl;
-		std::cout << std::endl;
-		std::cout << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
-		std::cout << vertices[8] << " " << vertices[9] << " " << vertices[10] << std::endl;
-		std::cout << vertices[16] << " " << vertices[17] << " " << vertices[18] << std::endl;
-		std::cout << vertices[24] << " " << vertices[25] << " " << vertices[26] << std::endl;
-		std::cout << std::endl;
-
 		ourShader.setFloat("mixValue", mixValue);
 
 		// render container
@@ -224,29 +217,40 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
-		mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (mixValue >= 1.0f)
-			mixValue = 1.0f;
+		mixValue = 0.0f; // change this value accordingly (might be too slow or too fast based on system hardware)
 	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 	{
-		mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (mixValue <= 0.0f)
-			mixValue = 0.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
-		zoomValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (zoomValue <= 1.0f)
-			zoomValue = 1.0f;
+		mixValue = 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		zoomValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (zoomValue >= 10.0f)
-			zoomValue = 10.0f;
+		zoomValue -= 0.05f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (zoomValue <= 0.25f)
+			zoomValue = 0.25f;
 	}
-
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		zoomValue += 0.05f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (zoomValue >= 20.0f)
+			zoomValue = 20.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		offset.y -= 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		offset.y += 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		offset.x += 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		offset.x -= 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
