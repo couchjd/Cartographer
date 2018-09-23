@@ -2,6 +2,9 @@
 #include <glfw3.h>
 #include "stb_image.h"
 #include "shader_s.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 
@@ -23,10 +26,6 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
 
 	// glfw window creation
 	// --------------------
@@ -51,10 +50,10 @@ int main()
 	// ------------------------------------------------------------------
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		 1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+		 1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -171,11 +170,31 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
+		glm::mat4 transform = { 1.0f, 0.0f, 0.0f, 1.0f, 
+								0.0f, 1.0f, 0.0f, 1.0f,
+								0.0f, 0.0f, 1.0f, 1.0f,
+								0.0f, 0.0f, 0.0f, 1.0f };
+
+		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
+
+		std::cout << transform[0][0] << " " << transform[0][1] << " " << transform[0][2] << " " << transform[0][3] << std::endl;
+		std::cout << transform[1][0] << " " << transform[1][1] << " " << transform[1][2] << " " << transform[1][3] << std::endl;
+		std::cout << transform[2][0] << " " << transform[2][1] << " " << transform[2][2] << " " << transform[2][3] << std::endl;
+		std::cout << transform[3][0] << " " << transform[3][1] << " " << transform[3][2] << " " << transform[3][3] << std::endl;
+		std::cout << std::endl;
+		std::cout << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
+		std::cout << vertices[8] << " " << vertices[9] << " " << vertices[10] << std::endl;
+		std::cout << vertices[16] << " " << vertices[17] << " " << vertices[18] << std::endl;
+		std::cout << vertices[24] << " " << vertices[25] << " " << vertices[26] << std::endl;
+		std::cout << std::endl;
+
 		ourShader.setFloat("mixValue", mixValue);
-		ourShader.setFloat("zoomValue", zoomValue);
 
 		// render container
 		ourShader.use();
+		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_TRUE, glm::value_ptr(transform));
+
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -205,27 +224,27 @@ void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
-		mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue >= 1.0f)
 			mixValue = 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 	{
-		mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		zoomValue -= 0.0001f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (zoomValue <= 0.0001f)
-			zoomValue = 0.0001f;
+		zoomValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (zoomValue <= 1.0f)
+			zoomValue = 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		zoomValue += 0.0001f; // change this value accordingly (might be too slow or too fast based on system hardware)
-		if (zoomValue >= 1.0f)
-			zoomValue = 1.0f;
+		zoomValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (zoomValue >= 10.0f)
+			zoomValue = 10.0f;
 	}
 
 }
@@ -234,7 +253,5 @@ void processInput(GLFWwindow *window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	// make sure the viewport matches the new window dimensions; note that width and 
-	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
