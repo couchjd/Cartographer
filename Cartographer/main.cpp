@@ -14,6 +14,9 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void scroll_callback(GLFWwindow* window, double x, double y);
+void cursor_enter_callback(GLFWwindow* window, int entered);
+void path_drop_callback(GLFWwindow* window, int count, const char** paths);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -38,6 +41,9 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetCursorEnterCallback(window, cursor_enter_callback);
+	glfwSetDropCallback(window, path_drop_callback);
 
 	glewInit();
 	glewExperimental = true;
@@ -146,8 +152,8 @@ int main() {
 	// or set it via the texture class
 	ourShader.setInt("texture2", 1);
 
-	bool show_demo_window = true;
-	bool show_another_window = false;
+	bool show_demo_window = false;
+	bool labels = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	while (!glfwWindowShouldClose(window)) {
@@ -171,9 +177,9 @@ int main() {
 
 			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
+			ImGui::Checkbox("Labels", &labels);
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::SliderFloat("float", &mixValue, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
 			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -186,7 +192,7 @@ int main() {
 		}
 
 		ImGui::Render();
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -198,6 +204,8 @@ int main() {
 
 		transform = glm::translate(transform, glm::vec3(offset.x, offset.y, 0.0f));
 		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
+		
+		mixValue = labels ? 1.0f : 0.0f;
 		ourShader.setFloat("mixValue", mixValue);
 
 		ourShader.use();
@@ -257,7 +265,26 @@ void processInput(GLFWwindow *window) {
 		offset.x -= 0.005f;
 	}
 }
+void scroll_callback(GLFWwindow* window, double x, double y) {
+	zoomValue += y / 5.0f;
+	if (zoomValue <= 0.25f)
+		zoomValue = 0.25f;
+	if (zoomValue >= 20.0f)
+		zoomValue = 20.0f;
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+}
+
+void cursor_enter_callback(GLFWwindow* window, int entered) {
+	if (entered) {}
+		//std::cout << "Cursor entered!" << std::endl;
+	else {}
+		//std::cout << "Cursor left!" << std::endl;
+}
+
+void path_drop_callback(GLFWwindow* window, int count, const char** paths) {
+	for (int i = 0; i < count; ++i)
+		std::cout << paths[i] << std::endl;
 }

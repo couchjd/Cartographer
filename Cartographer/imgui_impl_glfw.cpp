@@ -30,7 +30,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-
+#include <iostream>
 // GLFW
 #include<glfw3.h>
 #ifdef _WIN32
@@ -76,6 +76,7 @@ void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow*, int button, int action, int
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow*, double xoffset, double yoffset)
 {
     ImGuiIO& io = ImGui::GetIO();
+	std::cout << "scroll y: " << yoffset << std::endl;
     io.MouseWheelH += (float)xoffset;
     io.MouseWheel += (float)yoffset;
 }
@@ -105,7 +106,7 @@ void ImGui_ImplGlfw_CharCallback(GLFWwindow*, unsigned int c)
 void ImGui_ImplGlfw_InstallCallbacks(GLFWwindow* window)
 {
     glfwSetMouseButtonCallback(window, ImGui_ImplGlfw_MouseButtonCallback);
-    glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
+    //glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
     glfwSetKeyCallback(window, ImGui_ImplGlfw_KeyCallback);
     glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
 }
