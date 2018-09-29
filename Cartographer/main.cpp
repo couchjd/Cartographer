@@ -14,7 +14,6 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void scroll_callback(GLFWwindow* window, double x, double y);
 void cursor_enter_callback(GLFWwindow* window, int entered);
 void path_drop_callback(GLFWwindow* window, int count, const char** paths);
 
@@ -24,8 +23,12 @@ const char* TITLE = "Cartographer\0";
 
 float mixValue = 0.2f;
 float zoomValue = 1.0f;
+glm::dvec2 panStart;
+glm::dvec2 panEnd;
 
-glm::fvec2 offset = { 0.0f, 0.0f };
+bool LMBDown = false;
+
+glm::dvec2 offset = { 0.0f, 0.0f };
 
 int main() {
 	glfwInit();
@@ -41,7 +44,6 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetCursorEnterCallback(window, cursor_enter_callback);
 	glfwSetDropCallback(window, path_drop_callback);
 
@@ -173,13 +175,13 @@ int main() {
 			static float f = 0.0f;
 			static int counter = 0;
 
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+			ImGui::Begin("Control Panel");                          // Create a window called "Hello, world!" and append into it.
 
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Labels", &labels);
 
-			ImGui::SliderFloat("float", &mixValue, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			//ImGui::SliderFloat("float", &mixValue, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
 			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -200,11 +202,21 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
+		if (LMBDown) {
+			std::cout << "LMB DOWN\n";
+			glm::dvec2 mousePos;
+			glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
+			double x = (mousePos.x - panStart.x) / 50000.0;
+			double y = (panStart.y - mousePos.y) / 50000.0;
+
+			offset += glm::dvec2(x, y);
+		}
+
 		glm::mat4 transform(1);
 
 		transform = glm::translate(transform, glm::vec3(offset.x, offset.y, 0.0f));
 		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
-		
+
 		mixValue = labels ? 1.0f : 0.0f;
 		ourShader.setFloat("mixValue", mixValue);
 
@@ -236,41 +248,20 @@ int main() {
 void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		mixValue = 0.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		mixValue = 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		zoomValue -= 0.05f;
-		if (zoomValue <= 0.25f)
-			zoomValue = 0.25f;
-	}
+
+
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		zoomValue += 0.05f;
-		if (zoomValue >= 20.0f)
-			zoomValue = 20.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		offset.y -= 0.005f;
 	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 		offset.y += 0.005f;
 	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 		offset.x += 0.005f;
 	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 		offset.x -= 0.005f;
 	}
-}
-void scroll_callback(GLFWwindow* window, double x, double y) {
-	zoomValue += y / 5.0f;
-	if (zoomValue <= 0.25f)
-		zoomValue = 0.25f;
-	if (zoomValue >= 20.0f)
-		zoomValue = 20.0f;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -279,9 +270,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 void cursor_enter_callback(GLFWwindow* window, int entered) {
 	if (entered) {}
-		//std::cout << "Cursor entered!" << std::endl;
+	//std::cout << "Cursor entered!" << std::endl;
 	else {}
-		//std::cout << "Cursor left!" << std::endl;
+	//std::cout << "Cursor left!" << std::endl;
 }
 
 void path_drop_callback(GLFWwindow* window, int count, const char** paths) {
