@@ -14,15 +14,15 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void cursor_enter_callback(GLFWwindow* window, int entered);
-void path_drop_callback(GLFWwindow* window, int count, const char** paths);
+void loadTexture(const char* filename, unsigned int& texture1);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 const char* TITLE = "Cartographer\0";
 
-float mixValue = 0.2f;
+float mixValue = 0.0f;
 float zoomValue = 1.0f;
+
 glm::dvec2 panStart;
 glm::dvec2 panEnd;
 
@@ -44,8 +44,6 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorEnterCallback(window, cursor_enter_callback);
-	glfwSetDropCallback(window, path_drop_callback);
 
 	glewInit();
 	glewExperimental = true;
@@ -101,52 +99,8 @@ int main() {
 
 	unsigned int texture1, texture2;
 
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-	std::cout << "Loading IMAGE 1..." << std::endl;
-	unsigned char *data = stbi_load("../res/textures/faerun_no_tags.jpg", &width, &height, &nrChannels, 0);
-	if (data) {
-		std::cout << "Done loading IMAGE 1. Generating TEXTURE 1..." << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		std::cout << "Done generating TEXTURE 1. Generating MIPMAPS 1..." << std::endl;
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Done generating MIPMAPS 1." << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
-
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	std::cout << "Loading IMAGE 2..." << std::endl;
-	data = stbi_load("../res/textures/faerun_tags.jpg", &width, &height, &nrChannels, 0);
-	if (data) {
-		std::cout << "Done loading IMAGE 2. Generating TEXTURE 2..." << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		std::cout << "Done generating TEXTURE 2. Generating MIPMAPS 2..." << std::endl;
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Done generating MIPMAPS 2." << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
+	loadTexture("../res/textures/faerun_no_tags.jpg", texture1);
+	loadTexture("../res/textures/faerun_tags.jpg", texture2);
 
 	ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
 	// either set it manually like so:
@@ -245,37 +199,38 @@ int main() {
 	return 0;
 }
 
+void loadTexture(const char* filename, unsigned int& texture1) {
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	std::cout << "Loading image data..." << std::endl;
+	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
+	if (data) {
+		std::cout << "Done loading image data. Generating texture..." << std::endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		std::cout << "Done generating texture. Generating mipmaps..." << std::endl;
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Done generating mipmaps." << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+}
+
 void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
-
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		offset.y -= 0.005f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		offset.y += 0.005f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		offset.x += 0.005f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		offset.x -= 0.005f;
-	}
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-}
-
-void cursor_enter_callback(GLFWwindow* window, int entered) {
-	if (entered) {}
-	//std::cout << "Cursor entered!" << std::endl;
-	else {}
-	//std::cout << "Cursor left!" << std::endl;
-}
-
-void path_drop_callback(GLFWwindow* window, int count, const char** paths) {
-	for (int i = 0; i < count; ++i)
-		std::cout << paths[i] << std::endl;
 }
