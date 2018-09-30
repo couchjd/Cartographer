@@ -102,11 +102,10 @@ int main() {
 	loadTexture("../res/textures/faerun_no_tags.jpg", texture1);
 	loadTexture("../res/textures/faerun_tags.jpg", texture2);
 
-	ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
-	// either set it manually like so:
+	ourShader.use(); 
+
 	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
-	// or set it via the texture class
-	ourShader.setInt("texture2", 1);
+	glUniform1i(glGetUniformLocation(ourShader.ID, "texture2"), 1);
 
 	bool show_demo_window = false;
 	bool labels = false;
@@ -149,7 +148,7 @@ int main() {
 
 		ImGui::Render();
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -157,7 +156,6 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		if (LMBDown) {
-			std::cout << "LMB DOWN\n";
 			glm::dvec2 mousePos;
 			glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 			double x = (mousePos.x - panStart.x) / 50000.0;
