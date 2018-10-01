@@ -59,9 +59,7 @@ static double           g_Time = 0.0;
 static bool             g_MouseJustPressed[5] = { false, false, false, false, false };
 static GLFWcursor*      g_MouseCursors[ImGuiMouseCursor_COUNT] = { 0 };
 
-extern bool LMBDown;
-extern float zoomValue;
-extern glm::dvec2 panStart;
+extern glm::vec3 viewVec;
 
 static const char* ImGui_ImplGlfw_GetClipboardText(void* user_data)
 {
@@ -77,16 +75,6 @@ void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow*, int button, int action, int
 {
     if (action == GLFW_PRESS && button >= 0 && button < IM_ARRAYSIZE(g_MouseJustPressed))
         g_MouseJustPressed[button] = true;
-
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-		if (!LMBDown) {
-			LMBDown = true;
-			glfwGetCursorPos(g_Window, &panStart.x, &panStart.y);
-		}
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-		if (LMBDown)
-			LMBDown = false;
-	}
 }
 
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow*, double xoffset, double yoffset)
@@ -99,11 +87,11 @@ void ImGui_ImplGlfw_ScrollCallback(GLFWwindow*, double xoffset, double yoffset)
 	if (yZoom <= -0.5f)
 		yZoom = -0.5f;
 
-	zoomValue += yZoom;
-	if (zoomValue <= 0.25f)
-		zoomValue = 0.25f;
-	if (zoomValue >= 20.0f)
-		zoomValue = 20.0f;
+	viewVec.z += yZoom/5 * abs(viewVec.z);
+	if (viewVec.z <= -20.0f)
+		viewVec.z = -20.0f;
+	if (viewVec.z >= -0.01f)
+		viewVec.z = -0.01f;
 
     io.MouseWheelH += (float)xoffset;
     io.MouseWheel += (float)yoffset;

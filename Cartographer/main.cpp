@@ -14,21 +14,14 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void loadTexture(const char* filename, unsigned int& texture1);
+void loadTexture(const char* filename, unsigned int& texture1, int& width, int& height);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 800;
+unsigned int SCR_HEIGHT = 600;
 const char* TITLE = "Cartographer\0";
 
+glm::vec3 viewVec(0.0f, 0.0f, -3.0f);
 float mixValue = 0.0f;
-float zoomValue = 1.0f;
-
-glm::dvec2 panStart;
-glm::dvec2 panEnd;
-
-bool LMBDown = false;
-
-glm::dvec2 offset = { 0.0f, 0.0f };
 
 int main() {
 	glfwInit();
@@ -63,12 +56,19 @@ int main() {
 
 	Shader ourShader("../res/shaders/vertexShader.glsl", "../res/shaders/fragmentShader.glsl");
 
+	unsigned int texture1, texture2;
+	int width, height;
+	loadTexture("../res/textures/faerun_no_tags.jpg", texture1, width, height);
+	loadTexture("../res/textures/faerun_tags.jpg", texture2, width, height);
+
+	float yVal = (width / height) - 1.0f;
+
 	float vertices[] = {
-		// positions          // colors           // texture coords
-		 1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		// positions			// texture coords
+		 1.0f,  1.0f, 0.0f,		1.0f, 1.0f, // top right
+		 1.0f, -yVal, 0.0f,		1.0f, 0.0f, // bottom right
+		-1.0f, -yVal, 0.0f,		0.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, 0.0f,		0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -88,19 +88,11 @@ int main() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
 	// texture coord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	unsigned int texture1, texture2;
-
-	loadTexture("../res/textures/faerun_no_tags.jpg", texture1);
-	loadTexture("../res/textures/faerun_tags.jpg", texture2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	ourShader.use(); 
 
@@ -155,28 +147,26 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
-		if (LMBDown) {
-			glm::dvec2 mousePos;
-			glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
-			double x = (mousePos.x - panStart.x) / 50000.0;
-			double y = (panStart.y - mousePos.y) / 50000.0;
+		ourShader.use();
+		
+		glm::mat4 view(1);
+		glm::mat4 projection(1);
+		//projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.00000001f, 100.0f);
+		projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.00000001f, 100.0f);
+		view = glm::translate(view, viewVec);
 
-			offset += glm::dvec2(x, y);
-		}
-
-		glm::mat4 transform(1);
-
-		transform = glm::translate(transform, glm::vec3(offset.x, offset.y, 0.0f));
-		transform = glm::scale(transform, glm::vec3(zoomValue, zoomValue, 0.0f));
+		ourShader.setMat4("projection", projection);
+		ourShader.setMat4("view", view);
 
 		mixValue = labels ? 1.0f : 0.0f;
 		ourShader.setFloat("mixValue", mixValue);
 
-		ourShader.use();
-		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
 		glBindVertexArray(VAO);
+
+		glm::mat4 model(1);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		ourShader.setMat4("model", model);
+
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -197,7 +187,7 @@ int main() {
 	return 0;
 }
 
-void loadTexture(const char* filename, unsigned int& texture1) {
+void loadTexture(const char* filename, unsigned int& texture1, int& width, int& height) {
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	// set the texture wrapping parameters
@@ -207,8 +197,8 @@ void loadTexture(const char* filename, unsigned int& texture1) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	int nrChannels;
+	stbi_set_flip_vertically_on_load(false); // tell stb_image.h to flip loaded texture's on the y-axis.
 	std::cout << "Loading image data..." << std::endl;
 	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
 	if (data) {
@@ -227,8 +217,27 @@ void loadTexture(const char* filename, unsigned int& texture1) {
 void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	float panSpeed = abs(viewVec.z);
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		viewVec.y -= 0.00625 * panSpeed;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		viewVec.y += 0.00625 * panSpeed;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		viewVec.x += 0.00625 * panSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		viewVec.x -= 0.00625 * panSpeed;
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		if(viewVec.z >= -20.0f)
+			viewVec.z -= 0.00125;
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		if(viewVec.z <= -0.01)
+			viewVec.z += 0.00125;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+	SCR_HEIGHT = height;
+	SCR_WIDTH = width;
 }
