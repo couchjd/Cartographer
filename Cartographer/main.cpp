@@ -13,6 +13,8 @@
 #include "imgui_impl_opengl3.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void scroll_callback(GLFWwindow*, double xoffset, double yoffset);
+
 void processInput(GLFWwindow *window);
 void loadTexture(const char* filename, unsigned int& texture1, int& width, int& height);
 
@@ -37,6 +39,7 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	glewInit();
 	glewExperimental = true;
@@ -48,7 +51,7 @@ int main() {
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 	const char* glsl_version = "#version 330";
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(window, false);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	// Setup style
@@ -61,13 +64,15 @@ int main() {
 	loadTexture("../res/textures/faerun_no_tags.jpg", texture1, width, height);
 	loadTexture("../res/textures/faerun_tags.jpg", texture2, width, height);
 
-	float yVal = (width / height) - 1.0f;
+	//calculate lower y-coordinates based on texture size
+	float yVal = ((float)height / (float)width) - 1.0f;
+	std::cout << yVal << std::endl;
 
 	float vertices[] = {
 		// positions			// texture coords
 		 1.0f,  1.0f, 0.0f,		1.0f, 1.0f, // top right
-		 1.0f, -yVal, 0.0f,		1.0f, 0.0f, // bottom right
-		-1.0f, -yVal, 0.0f,		0.0f, 0.0f, // bottom left
+		 1.0f,  yVal, 0.0f,		1.0f, 0.0f, // bottom right
+		-1.0f,  yVal, 0.0f,		0.0f, 0.0f, // bottom left
 		-1.0f,  1.0f, 0.0f,		0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
@@ -126,13 +131,12 @@ int main() {
 			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Labels", &labels);
 
+			if (ImGui::Button("Reset")) {
+				viewVec = glm::vec3(0.0f, 0.0f, -3.0f);
+			}
+
 			//ImGui::SliderFloat("float", &mixValue, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
@@ -151,7 +155,6 @@ int main() {
 		
 		glm::mat4 view(1);
 		glm::mat4 projection(1);
-		//projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.00000001f, 100.0f);
 		projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.00000001f, 100.0f);
 		view = glm::translate(view, viewVec);
 
@@ -218,6 +221,7 @@ void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	//pan slower when zoomed in further
 	float panSpeed = abs(viewVec.z);
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -240,4 +244,22 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 	SCR_HEIGHT = height;
 	SCR_WIDTH = width;
+}
+
+void scroll_callback(GLFWwindow*, double xoffset, double yoffset) {
+	double yZoom = yoffset;
+
+	if (yZoom >= 0.5f)
+		yZoom = 0.5f;
+	if (yZoom <= -0.5f)
+		yZoom = -0.5f;
+
+	float zoomAmt = abs(viewVec.z) / 5;
+
+	viewVec.z += yZoom * zoomAmt;
+
+	if (viewVec.z <= -20.0f)
+		viewVec.z = -20.0f;
+	if (viewVec.z >= -0.01f)
+		viewVec.z = -0.01f;
 }

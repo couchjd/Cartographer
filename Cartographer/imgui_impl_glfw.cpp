@@ -59,8 +59,6 @@ static double           g_Time = 0.0;
 static bool             g_MouseJustPressed[5] = { false, false, false, false, false };
 static GLFWcursor*      g_MouseCursors[ImGuiMouseCursor_COUNT] = { 0 };
 
-extern glm::vec3 viewVec;
-
 static const char* ImGui_ImplGlfw_GetClipboardText(void* user_data)
 {
     return glfwGetClipboardString((GLFWwindow*)user_data);
@@ -80,18 +78,6 @@ void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow*, int button, int action, int
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow*, double xoffset, double yoffset)
 {
     ImGuiIO& io = ImGui::GetIO();
-	double yZoom = yoffset;
-
-	if (yZoom >= 0.5f)
-		yZoom = 0.5f;
-	if (yZoom <= -0.5f)
-		yZoom = -0.5f;
-
-	viewVec.z += yZoom/5 * abs(viewVec.z);
-	if (viewVec.z <= -20.0f)
-		viewVec.z = -20.0f;
-	if (viewVec.z >= -0.01f)
-		viewVec.z = -0.01f;
 
     io.MouseWheelH += (float)xoffset;
     io.MouseWheel += (float)yoffset;
