@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cartographer", "Cartographer\Cartographer.vcxproj", "{A547FF99-BDAA-45B9-B62F-BE3E43FA1246}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureLoader", "TextureLoader\TextureLoader.vcxproj", "{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{A547FF99-BDAA-45B9-B62F-BE3E43FA1246}.Release|x64.Build.0 = Release|x64
 		{A547FF99-BDAA-45B9-B62F-BE3E43FA1246}.Release|x86.ActiveCfg = Release|Win32
 		{A547FF99-BDAA-45B9-B62F-BE3E43FA1246}.Release|x86.Build.0 = Release|Win32
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Debug|x64.ActiveCfg = Debug|x64
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Debug|x64.Build.0 = Debug|x64
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Debug|x86.ActiveCfg = Debug|Win32
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Debug|x86.Build.0 = Debug|Win32
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Release|x64.ActiveCfg = Release|x64
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Release|x64.Build.0 = Release|x64
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Release|x86.ActiveCfg = Release|Win32
+		{7B82E05E-D3B6-4ABB-B0D6-83800E8DE109}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

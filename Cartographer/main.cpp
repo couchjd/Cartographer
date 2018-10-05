@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <glfw3.h>
+#include <GL/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -61,6 +61,7 @@ int main() {
 
 	unsigned int texture1, texture2;
 	int width, height;
+
 	loadTexture("../res/textures/faerun_no_tags.jpg", texture1, width, height);
 	loadTexture("../res/textures/faerun_tags.jpg", texture2, width, height);
 
