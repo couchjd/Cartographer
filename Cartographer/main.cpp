@@ -223,7 +223,7 @@ void processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 
 	//pan slower when zoomed in further
-	float panSpeed = abs(viewVec.z);
+	float panSpeed = abs(viewVec.z) / 4;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		viewVec.y -= 0.00625 * panSpeed;
