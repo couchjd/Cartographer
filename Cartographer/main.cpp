@@ -24,6 +24,7 @@ const char* TITLE = "Cartographer\0";
 
 glm::vec3 viewVec(0.0f, 0.0f, -3.0f);
 float mixValue = 0.0f;
+float mixSlider = 1.0f;
 
 int main() 
 {
@@ -49,8 +50,7 @@ int main()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+
 	const char* glsl_version = "#version 330";
 	ImGui_ImplGlfw_InitForOpenGL(window, false);
 	ImGui_ImplOpenGL3_Init(glsl_version);
@@ -127,15 +127,15 @@ int main()
 		static int counter = 0;
 
 		ImGui::Begin("Control Panel"); 
-		ImGui::Checkbox("Labels", &labels);
+		ImGui::Checkbox("Toggle Labels", &labels);
 
 		if (ImGui::Button("Reset")) 
 		{
 			viewVec = glm::vec3(0.0f, 0.0f, -3.0f);
 		}
 
-		//ImGui::SliderFloat("float", &mixValue, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+		ImGui::SliderFloat("Label Opacity", &mixSlider, 0.0f, 1.0f);
+		ImGui::ColorEdit3("Background Color", (float*)&clear_color);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
@@ -159,7 +159,7 @@ int main()
 		ourShader.setMat4("projection", projection);
 		ourShader.setMat4("view", view);
 
-		mixValue = labels ? 1.0f : 0.0f;
+		mixValue = labels ? mixSlider : 0.0f;
 		ourShader.setFloat("mixValue", mixValue);
 
 		glBindVertexArray(VAO);
